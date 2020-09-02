@@ -1,6 +1,7 @@
 // import express from "express"; // ES2015 modules
 const express = require("express"); // commonJS modules, similar to above
 const shortid = require("shortid");
+const e = require("express");
 
 const server = express();
 
@@ -20,12 +21,16 @@ server.post("/api/users", (req, res) => {
     res
       .status(400)
       .json({ errorMessage: "Please provide name and bio for the user." });
-  } else {
+  } else if (req.body.name || req.body.bio) {
     const user = req.body;
 
     users.push(user);
 
     res.status(201).json({ data: users });
+  } else {
+    res.status(500).json({
+      message: "There was an error while saving the user to the database",
+    });
   }
 });
 
@@ -45,10 +50,14 @@ server.get("/api/users/:id", (req, res) => {
 
   if (found) {
     res.status(200).json(found);
-  } else {
+  } else if (!found) {
     res
       .status(404)
       .json({ errorMessage: "The user with the specified ID does not exist." });
+  } else {
+    res
+      .status(500)
+      .json({ message: "The user information could not be retrieved" });
   }
 });
 
@@ -60,10 +69,12 @@ server.delete("/api/users/:id", (req, res) => {
     users = users.filter((user) => user.id !== id);
 
     res.status(200).json(users);
-  } else {
+  } else if (!found) {
     res
       .status(404)
       .json({ message: "The user with the specified ID does not exist" });
+  } else {
+    res.status(500).json({ message: "The user could not be removed" });
   }
 });
 
