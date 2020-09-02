@@ -29,15 +29,63 @@ server.post("/api/users", (req, res) => {
   }
 });
 
-server.get("/api/users", (req, res) => {});
-
-server.get("/api/users/:id", (req, res) => {
-  res.status(200).json({ data: users });
+server.get("/api/users", (req, res) => {
+  if (req.body) {
+    res.status(200).json({ data: users });
+  } else {
+    res
+      .status(500)
+      .json({ errorMessage: "The users information could not be retrieved" });
+  }
 });
 
-server.delete("/api/users/:id", (req, res) => {});
+server.get("/api/users/:id", (req, res) => {
+  const id = Number(req.params.id);
+  let found = users.find((u) => u.id === id);
 
-server.put("/api/users/:id", (req, res) => {});
+  if (found) {
+    res.status(200).json(found);
+  } else {
+    res
+      .status(404)
+      .json({ errorMessage: "The user with the specified ID does not exist." });
+  }
+});
+
+server.delete("/api/users/:id", (req, res) => {
+  const id = Number(req.params.id);
+  let found = users.find((u) => u.id === id);
+
+  if (found) {
+    users = users.filter((user) => user.id !== id);
+
+    res.status(200).json(users);
+  } else {
+    res
+      .status(404)
+      .json({ message: "The user with the specified ID does not exist" });
+  }
+});
+
+server.put("/api/users/:id", (req, res) => {
+  const changes = req.body;
+  const id = Number(req.params.id);
+  let found = users.find((u) => u.id === id);
+
+  if (!req.body.name || !req.body.bio) {
+    res
+      .status(400)
+      .json({ message: "Please provide name and bio for the user" });
+  } else if (found) {
+    Object.assign(found, changes);
+
+    res.status(200).json(found);
+  } else {
+    res
+      .status(404)
+      .json({ message: "The user with the specified ID does not exist" });
+  }
+});
 
 const port = 8000;
 server.listen(port, () => console.log("server listening on port: 8000"));
